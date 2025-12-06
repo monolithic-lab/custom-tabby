@@ -32,8 +32,8 @@ use async_openai_alt::{
     },
 };
 use auth::{
-    AuthProvider, AuthProviderKind, AuthenticationService, Invitation, LdapCredential,
-    RefreshTokenResponse, RegisterResponse, TokenAuthResponse, UpdateLdapCredentialInput,
+    AuthProvider, AuthProviderKind, AuthenticationService, LdapCredential,
+    RefreshTokenResponse, TokenAuthResponse, UpdateLdapCredentialInput,
     UserSecured,
 };
 use base64::Engine;
@@ -73,8 +73,7 @@ use worker::WorkerService;
 use self::{
     analytic::{AnalyticService, ChatCompletionStats, CompletionStats, DiskUsageStats},
     auth::{
-        JWTPayload, OAuthCredential, OAuthProvider, PasswordChangeInput, PasswordResetInput,
-        RequestInvitationInput, RequestPasswordResetEmailInput, UpdateOAuthCredentialInput,
+        JWTPayload, OAuthCredential, OAuthProvider, UpdateOAuthCredentialInput,
     },
     email::{EmailService, EmailSetting, EmailSettingInput},
     ingestion::{IngestionService, IngestionStats},
@@ -94,7 +93,6 @@ use self::{
     web_documents::{CreateCustomDocumentInput, CustomWebDocument, WebDocumentService},
 };
 use crate::{
-    env, is_demo_mode,
     juniper::relay::{self, query_async, Connection},
     web_documents::{PresetWebDocument, SetPresetDocumentActiveInput},
 };
@@ -356,29 +354,6 @@ impl Query {
         .await
     }
 
-    async fn invitations(
-        ctx: &Context,
-        after: Option<String>,
-        before: Option<String>,
-        first: Option<i32>,
-        last: Option<i32>,
-    ) -> Result<Connection<Invitation>> {
-        check_admin(ctx).await?;
-        relay::query_async(
-            after,
-            before,
-            first,
-            last,
-            |after, before, first, last| async move {
-                ctx.locator
-                    .auth()
-                    .list_invitations(after, before, first, last)
-                    .await
-            },
-        )
-        .await
-    }
-
     async fn job_runs(
         ctx: &Context,
         ids: Option<Vec<ID>>,
@@ -547,14 +522,6 @@ impl Query {
             is_admin_initialized: ctx.locator.auth().is_admin_initialized().await?,
             is_chat_enabled: ctx.locator.worker().is_chat_enabled().await?,
             is_email_configured: ctx.locator.email().read_setting().await?.is_some(),
-            allow_self_signup: ctx.locator.auth().allow_self_signup().await?,
-            disable_password_login: ctx
-                .locator
-                .setting()
-                .read_security_setting()
-                .await?
-                .disable_password_login,
-            is_demo_mode: env::is_demo_mode(),
         })
     }
 
@@ -1066,9 +1033,6 @@ pub struct ServerInfo {
     is_admin_initialized: bool,
     is_chat_enabled: bool,
     is_email_configured: bool,
-    allow_self_signup: bool,
-    disable_password_login: bool,
-    is_demo_mode: bool,
 }
 
 #[derive(Default)]
@@ -1079,63 +1043,6 @@ impl Mutation {
     async fn reset_registration_token(ctx: &Context) -> Result<String> {
         check_admin(ctx).await?;
         ctx.locator.worker().reset_registration_token().await
-    }
-
-    async fn request_invitation_email(
-        ctx: &Context,
-        input: RequestInvitationInput,
-    ) -> Result<Invitation> {
-        input.validate()?;
-        ctx.locator.auth().request_invitation_email(input).await
-    }
-
-    async fn generate_reset_password_url(ctx: &Context, user_id: ID) -> Result<String> {
-        check_admin(ctx).await?;
-        ctx.locator
-            .auth()
-            .generate_reset_password_url(&user_id)
-            .await
-    }
-
-    async fn request_password_reset_email(
-        ctx: &Context,
-        input: RequestPasswordResetEmailInput,
-    ) -> Result<bool> {
-        input.validate()?;
-        ctx.locator
-            .auth()
-            .request_password_reset_email(input.email)
-            .await?;
-        Ok(true)
-    }
-
-    async fn password_reset(ctx: &Context, input: PasswordResetInput) -> Result<bool> {
-        input.validate()?;
-        ctx.locator
-            .auth()
-            .password_reset(&input.code, &input.password1)
-            .await?;
-        Ok(true)
-    }
-
-    async fn password_change(ctx: &Context, input: PasswordChangeInput) -> Result<bool> {
-        if is_demo_mode() {
-            return Err(CoreError::Forbidden(
-                "Changing password is disabled in Demo mode.",
-            ));
-        }
-
-        let claims = check_claims(ctx)?;
-        input.validate()?;
-        ctx.locator
-            .auth()
-            .update_user_password(
-                &claims.sub,
-                input.old_password.as_deref(),
-                &input.new_password1,
-            )
-            .await?;
-        Ok(true)
     }
 
     async fn reset_user_auth_token(ctx: &Context) -> Result<bool> {
@@ -1208,40 +1115,6 @@ impl Mutation {
         Ok(true)
     }
 
-    async fn register(
-        ctx: &Context,
-        email: String,
-        password1: String,
-        password2: String,
-        invitation_code: Option<String>,
-        name: String,
-    ) -> Result<RegisterResponse> {
-        let input = auth::RegisterInput {
-            email,
-            password1,
-            password2,
-        };
-        input.validate()?;
-
-        ctx.locator
-            .auth()
-            .register(input.email, input.password1, invitation_code, Some(name))
-            .await
-    }
-
-    async fn token_auth(
-        ctx: &Context,
-        email: String,
-        password: String,
-    ) -> Result<TokenAuthResponse> {
-        let input = auth::TokenAuthInput { email, password };
-        input.validate()?;
-        ctx.locator
-            .auth()
-            .token_auth(input.email, input.password)
-            .await
-    }
-
     async fn token_auth_ldap(
         ctx: &Context,
         user_id: String,
@@ -1265,18 +1138,6 @@ impl Mutation {
 
     async fn refresh_token(ctx: &Context, refresh_token: String) -> Result<RefreshTokenResponse> {
         ctx.locator.auth().refresh_token(refresh_token).await
-    }
-
-    async fn create_invitation(ctx: &Context, email: String) -> Result<ID> {
-        check_admin(ctx).await?;
-        let invitation = ctx.locator.auth().create_invitation(email.clone()).await?;
-        Ok(invitation.id)
-    }
-
-    async fn send_test_email(ctx: &Context, to: String) -> Result<bool> {
-        check_admin(ctx).await?;
-        ctx.locator.email().send_test(to).await?;
-        Ok(true)
     }
 
     async fn mark_notifications_read(ctx: &Context, notification_id: Option<ID>) -> Result<bool> {
@@ -1317,11 +1178,6 @@ impl Mutation {
             .git()
             .update(&id, name, git_url)
             .await
-    }
-
-    async fn delete_invitation(ctx: &Context, id: ID) -> Result<ID> {
-        check_admin(ctx).await?;
-        ctx.locator.auth().delete_invitation(&id).await
     }
 
     async fn update_oauth_credential(

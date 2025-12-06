@@ -17,8 +17,8 @@ import {
   type ErrorMessage,
   type FileLocation,
   type InitRequest
-} from 'tabby-chat-panel'
-import { useServer } from 'tabby-chat-panel/react'
+} from '@/lib/integrations/ide'
+import { useServer } from '@/lib/integrations/ide'
 
 import { Button } from '@/components/ui/button'
 import { IconSpinner } from '@/components/ui/icons'

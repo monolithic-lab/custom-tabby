@@ -23,18 +23,6 @@ macro_rules! template_email {
     };
 }
 
-pub fn invitation(external_url: &str, code: &str, email: &str) -> String {
-    template_email!(invitation: external_url, code, email)
-}
-
-pub fn test() -> String {
-    template_email!(test: )
-}
-
-pub fn password_reset(external_url: &str, email: &str, code: &str) -> String {
-    template_email!(password_reset: external_url, email, code)
-}
-
 pub fn signup_success(external_url: &str, email: &str) -> String {
     template_email!(signup_success: external_url, email)
 }

@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import { FileLocation, SymbolInfo } from 'tabby-chat-panel/index'
+import { FileLocation, SymbolInfo } from '@/lib/integrations/ide'
 
 import { ContextInfo } from '@/lib/gql/generates/graphql'
 import { AttachmentCodeItem, Context } from '@/lib/types'

@@ -10,7 +10,7 @@ import type {
   ListSymbolsParams,
   LookupSymbolHint,
   SymbolInfo
-} from 'tabby-chat-panel'
+} from '@/lib/integrations/ide'
 
 import {
   ContextInfo,

@@ -6,8 +6,8 @@ import type {
   EditorFileContext,
   FileLocation,
   GitRepository
-} from 'tabby-chat-panel'
-import { useClient } from 'tabby-chat-panel/react'
+} from '@/lib/integrations/ide'
+import { useClient } from '@/lib/integrations/ide'
 
 import { RepositoryListQuery } from '@/lib/gql/generates/graphql'
 import { useLatest } from '@/lib/hooks/use-latest'

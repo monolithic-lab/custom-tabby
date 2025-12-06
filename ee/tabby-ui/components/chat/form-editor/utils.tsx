@@ -1,7 +1,7 @@
 // utils.ts
 import { Editor, JSONContent } from '@tiptap/core'
 import { FileBox, SquareFunction } from 'lucide-react'
-import { Filepath, ListSymbolItem } from 'tabby-chat-panel/index'
+import { Filepath, ListSymbolItem } from '@/lib/integrations/ide'
 
 import {
   PLACEHOLDER_FILE_REGEX,
@@ -95,7 +95,7 @@ export function replaceAtMentionPlaceHolderWithAt(value: string) {
 }
 
 /**
- * Extracts the real file path string from a Filepath object in tabby-chat-panel.
+ * Extracts the real file path string from a Filepath object in IDE types.
  */
 export function getFilepathStringByChatPanelFilePath(
   filepath: Filepath

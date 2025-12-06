@@ -1,5 +1,5 @@
 import mitt from 'mitt'
-import { ChatCommand, EditorFileContext } from 'tabby-chat-panel/index'
+import { ChatCommand, EditorFileContext } from '@/lib/integrations/ide'
 
 type LineMenuAction = 'copy-line' | 'copy-permalink'
 

@@ -1,4 +1,4 @@
-import { Filepath } from 'tabby-chat-panel/index'
+import { Filepath } from '@/lib/integrations/ide'
 import { describe, expect, it } from 'vitest'
 
 import {

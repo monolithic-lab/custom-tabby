@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react'
 import { NodeViewProps, NodeViewWrapper } from '@tiptap/react'
-import { Filepath } from 'tabby-chat-panel/index'
+import { Filepath } from '@/lib/integrations/ide'
 
 import {
   MARKDOWN_COMMAND_REGEX,

@@ -1,6 +1,6 @@
 import { ReactNode, useContext, useMemo, useState } from 'react'
 import { isNil } from 'lodash-es'
-import { TerminalContext } from 'tabby-chat-panel/index'
+import { TerminalContext } from '@/lib/integrations/ide'
 
 import {
   Maybe,

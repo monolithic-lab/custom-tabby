@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { findClosestGitRepository } from '../lib/utils/repository'
-import type { GitRepository } from 'tabby-chat-panel'
+import type { GitRepository } from '@/lib/integrations/ide'
 
 describe('findClosestGitRepository', () => {
   it('should match .git suffix', () => {

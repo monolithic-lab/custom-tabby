@@ -8,7 +8,7 @@ import {
   some,
   uniqWith
 } from 'lodash-es'
-import type { ChatCommand, EditorContext } from 'tabby-chat-panel'
+import type { ChatCommand, EditorContext } from '@/lib/integrations/ide'
 import { useQuery } from 'urql'
 
 import { ERROR_CODE_NOT_FOUND } from '@/lib/constants'

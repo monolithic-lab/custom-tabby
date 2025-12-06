@@ -10,7 +10,7 @@ import type {
   Location,
   Position,
   PositionRange
-} from 'tabby-chat-panel'
+} from '@/lib/integrations/ide'
 import { twMerge } from 'tailwind-merge'
 
 import { AttachmentCodeItem, Context, FileContext } from '@/lib/types'

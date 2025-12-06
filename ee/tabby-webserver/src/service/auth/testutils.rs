@@ -3,14 +3,13 @@ use chrono::{Duration, Utc};
 use juniper::ID;
 use tabby_schema::{
     auth::{
-        AuthenticationService, Invitation, JWTPayload, LdapCredential, OAuthCredential, OAuthError,
-        OAuthProvider, OAuthResponse, RefreshTokenResponse, RegisterResponse,
-        RequestInvitationInput, TokenAuthResponse, UpdateLdapCredentialInput,
+        AuthenticationService, JWTPayload, LdapCredential, OAuthCredential, OAuthError,
+        OAuthProvider, OAuthResponse, RefreshTokenResponse,
+        TokenAuthResponse, UpdateLdapCredentialInput,
         UpdateOAuthCredentialInput, UserSecured,
     },
     Result,
 };
-use tokio::task::JoinHandle;
 
 use crate::ldap::{LdapClient, LdapUser};
 
@@ -52,63 +51,6 @@ impl FakeAuthService {
 
 #[async_trait]
 impl AuthenticationService for FakeAuthService {
-    async fn register(
-        &self,
-        _email: String,
-        _password: String,
-        _invitation_code: Option<String>,
-        _name: Option<String>,
-    ) -> Result<RegisterResponse> {
-        Ok(RegisterResponse::new(
-            "access_token".to_string(),
-            "refresh_token".to_string(),
-        ))
-    }
-
-    async fn allow_self_signup(&self) -> Result<bool> {
-        Ok(true)
-    }
-
-    async fn generate_reset_password_url(&self, id: &ID) -> Result<String> {
-        Ok(format!("https://example.com/reset-password/{id}"))
-    }
-
-    async fn request_password_reset_email(&self, _email: String) -> Result<Option<JoinHandle<()>>> {
-        Ok(None)
-    }
-
-    async fn password_reset(&self, _code: &str, _password: &str) -> Result<()> {
-        Ok(())
-    }
-
-    async fn update_user_password(
-        &self,
-        _id: &ID,
-        _old_password: Option<&str>,
-        _new_password: &str,
-    ) -> Result<()> {
-        Ok(())
-    }
-
-    async fn update_user_avatar(&self, _id: &ID, _avatar: Option<Box<[u8]>>) -> Result<()> {
-        Ok(())
-    }
-
-    async fn get_user_avatar(&self, _id: &ID) -> Result<Option<Box<[u8]>>> {
-        Ok(None)
-    }
-
-    async fn update_user_name(&self, _id: &ID, _name: String) -> Result<()> {
-        Ok(())
-    }
-
-    async fn token_auth(&self, _email: String, _password: String) -> Result<TokenAuthResponse> {
-        Ok(TokenAuthResponse::new(
-            "access_token".to_string(),
-            "refresh_token".to_string(),
-        ))
-    }
-
     async fn token_auth_ldap(&self, _user_id: &str, _password: &str) -> Result<TokenAuthResponse> {
         Ok(TokenAuthResponse::new(
             "access_token".to_string(),
@@ -163,24 +105,6 @@ impl AuthenticationService for FakeAuthService {
             .map_err(Into::into)
     }
 
-    async fn create_invitation(&self, email: String) -> Result<Invitation> {
-        let invitation = Invitation {
-            id: ID::new("1"),
-            email: email.clone(),
-            code: "invitation_code".to_string(),
-            created_at: Utc::now(),
-        };
-        Ok(invitation)
-    }
-
-    async fn request_invitation_email(&self, input: RequestInvitationInput) -> Result<Invitation> {
-        self.create_invitation(input.email).await
-    }
-
-    async fn delete_invitation(&self, id: &ID) -> Result<ID> {
-        Ok(id.clone())
-    }
-
     async fn reset_user_auth_token(&self, _id: &ID) -> Result<()> {
         Ok(())
     }
@@ -198,16 +122,6 @@ impl AuthenticationService for FakeAuthService {
         _last: Option<usize>,
     ) -> Result<Vec<UserSecured>> {
         Ok(self.users.clone())
-    }
-
-    async fn list_invitations(
-        &self,
-        _after: Option<String>,
-        _before: Option<String>,
-        _first: Option<usize>,
-        _last: Option<usize>,
-    ) -> Result<Vec<Invitation>> {
-        Ok(vec![])
     }
 
     async fn read_ldap_credential(&self) -> Result<Option<LdapCredential>> {
@@ -257,6 +171,18 @@ impl AuthenticationService for FakeAuthService {
     }
 
     async fn update_user_active(&self, _id: &ID, _active: bool) -> Result<()> {
+        Ok(())
+    }
+
+    async fn update_user_avatar(&self, _id: &ID, _avatar: Option<Box<[u8]>>) -> Result<()> {
+        Ok(())
+    }
+
+    async fn get_user_avatar(&self, _id: &ID) -> Result<Option<Box<[u8]>>> {
+        Ok(None)
+    }
+
+    async fn update_user_name(&self, _id: &ID, _name: String) -> Result<()> {
         Ok(())
     }
 }

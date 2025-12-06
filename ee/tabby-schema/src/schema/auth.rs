@@ -6,7 +6,7 @@ use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject, ID};
 use serde::{Deserialize, Serialize};
 use strum::EnumIter;
 use thiserror::Error;
-use tokio::task::JoinHandle;
+
 use tracing::error;
 use validator::Validate;
 
@@ -452,17 +452,6 @@ pub struct LdapCredential {
 
 #[async_trait]
 pub trait AuthenticationService: Send + Sync {
-    async fn register(
-        &self,
-        email: String,
-        password1: String,
-        invitation_code: Option<String>,
-        name: Option<String>,
-    ) -> Result<RegisterResponse>;
-    async fn allow_self_signup(&self) -> Result<bool>;
-
-    async fn token_auth(&self, email: String, password: String) -> Result<TokenAuthResponse>;
-
     async fn token_auth_ldap(&self, email: &str, password: &str) -> Result<TokenAuthResponse>;
 
     async fn refresh_token(&self, refresh_token: String) -> Result<RefreshTokenResponse>;
@@ -473,20 +462,7 @@ pub trait AuthenticationService: Send + Sync {
     async fn get_user(&self, id: &ID) -> Result<UserSecured>;
     async fn logout_all_sessions(&self, id: &ID) -> Result<()>;
 
-    async fn create_invitation(&self, email: String) -> Result<Invitation>;
-    async fn request_invitation_email(&self, input: RequestInvitationInput) -> Result<Invitation>;
-    async fn delete_invitation(&self, id: &ID) -> Result<ID>;
-
     async fn reset_user_auth_token(&self, id: &ID) -> Result<()>;
-    async fn password_reset(&self, code: &str, password: &str) -> Result<()>;
-    async fn generate_reset_password_url(&self, id: &ID) -> Result<String>;
-    async fn request_password_reset_email(&self, email: String) -> Result<Option<JoinHandle<()>>>;
-    async fn update_user_password(
-        &self,
-        id: &ID,
-        old_password: Option<&str>,
-        new_password: &str,
-    ) -> Result<()>;
 
     async fn list_users(
         &self,
@@ -496,14 +472,6 @@ pub trait AuthenticationService: Send + Sync {
         first: Option<usize>,
         last: Option<usize>,
     ) -> Result<Vec<UserSecured>>;
-
-    async fn list_invitations(
-        &self,
-        after: Option<String>,
-        before: Option<String>,
-        first: Option<usize>,
-        last: Option<usize>,
-    ) -> Result<Vec<Invitation>>;
 
     async fn oauth(
         &self,

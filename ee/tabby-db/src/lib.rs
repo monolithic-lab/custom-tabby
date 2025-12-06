@@ -9,10 +9,10 @@ pub use attachment::{
 use cache::Cache;
 use cached::TimedSizedCache;
 use chrono::{DateTime, Utc};
-pub use email_setting::EmailSettingDAO;
+
 pub use ingestion::{IngestedDocumentDAO, IngestedDocumentStatusDAO, IngestionStatusDAO};
 pub use integrations::IntegrationDAO;
-pub use invitations::InvitationDAO;
+
 pub use job_runs::JobRunDAO;
 pub use ldap_credential::LdapCredentialDAO;
 pub use notifications::NotificationDAO;
@@ -37,10 +37,10 @@ pub use web_documents::WebDocumentDAO;
 mod access_policy;
 mod attachment;
 pub mod cache;
-mod email_setting;
+
 mod ingestion;
 mod integrations;
-mod invitations;
+
 mod job_runs;
 mod ldap_credential;
 #[cfg(test)]
@@ -48,10 +48,12 @@ mod migration_tests;
 mod notifications;
 mod oauth_credential;
 mod pages;
-mod password_reset;
+
 mod provided_repositories;
 mod refresh_tokens;
 mod repositories;
+mod email_setting;
+pub use email_setting::EmailSettingDAO;
 mod server_setting;
 mod threads;
 mod user_chats;
@@ -385,24 +387,21 @@ pub mod testutils {
 
     pub async fn create_user(conn: &DbConn) -> i64 {
         let email: &str = "test@example.com";
-        let password: &str = "123456789";
-        conn.create_user(email.to_string(), Some(password.to_string()), true, None)
+        conn.create_user(email.to_string(), true, None)
             .await
             .unwrap()
     }
 
     pub async fn create_user2(conn: &DbConn) -> i64 {
         let email: &str = "test2@example.com";
-        let password: &str = "123456789";
-        conn.create_user(email.to_string(), Some(password.to_string()), true, None)
+        conn.create_user(email.to_string(), true, None)
             .await
             .unwrap()
     }
 
     pub async fn create_user3(conn: &DbConn) -> i64 {
         let email: &str = "test3@example.com";
-        let password: &str = "123456789";
-        conn.create_user(email.to_string(), Some(password.to_string()), true, None)
+        conn.create_user(email.to_string(), true, None)
             .await
             .unwrap()
     }

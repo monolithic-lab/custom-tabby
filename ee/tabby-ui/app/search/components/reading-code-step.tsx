@@ -2,7 +2,7 @@
 
 import { ReactNode, useContext, useMemo } from 'react'
 import { Maybe } from 'graphql/jsutils/Maybe'
-import { TerminalContext } from 'tabby-chat-panel/index'
+import { TerminalContext } from '@/lib/integrations/ide'
 
 import {
   ContextSource,

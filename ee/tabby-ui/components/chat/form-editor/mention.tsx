@@ -21,7 +21,7 @@ import {
   ListFilesInWorkspaceParams,
   ListSymbolItem,
   ListSymbolsParams
-} from 'tabby-chat-panel/index'
+} from '@/lib/integrations/ide'
 
 import { useDebounceValue } from '@/lib/hooks/use-debounce'
 import {

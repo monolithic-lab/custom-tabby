@@ -41,7 +41,6 @@ pub struct CodeGeneration {
 impl CodeGeneration {
     pub fn new(imp: Arc<dyn CompletionStream>, config: Option<ModelConfig>) -> Self {
         let additional_stop_words = match config {
-            Some(ModelConfig::Local(config)) => config.additional_stop_words.unwrap_or_default(),
             Some(ModelConfig::Http(config)) => config.additional_stop_words.unwrap_or_default(),
             _ => vec![],
         };

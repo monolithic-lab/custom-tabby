@@ -68,9 +68,9 @@ pub fn init_tracing_subscriber(otlp_endpoint: Option<String>) -> OtelGuard {
     layers.push(fmt_layer);
 
     let mut dirs = if cfg!(feature = "prod") {
-        "tabby=info,otel=debug,http_api_bindings=info,llama_cpp_server=info".into()
+        "tabby=info,otel=debug,http_api_bindings=info".into()
     } else {
-        "tabby=debug,otel=debug,http_api_bindings=debug,llama_cpp_server=debug".into()
+        "tabby=debug,otel=debug,http_api_bindings=debug".into()
     };
 
     if let Ok(env) = std::env::var(EnvFilter::DEFAULT_ENV) {

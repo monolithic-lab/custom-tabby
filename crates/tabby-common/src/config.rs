@@ -232,12 +232,15 @@ impl Default for ServerConfig {
 }
 
 fn default_embedding_config() -> ModelConfig {
-    ModelConfig::Local(LocalModelConfig {
-        model_id: "Nomic-Embed-Text".into(),
-        parallelism: 1,
-        num_gpu_layers: 9999,
-        enable_fast_attention: None,
-        context_size: default_context_size(),
+    ModelConfig::Http(HttpModelConfig {
+        kind: "llama.cpp/embedding".into(),
+        api_endpoint: Some("http://localhost:8080".into()),
+        api_key: None,
+        rate_limit: RateLimit::default(),
+        model_name: Some("Nomic-Embed-Text".into()),
+        prompt_template: None,
+        chat_template: None,
+        supported_models: None,
         additional_stop_words: None,
     })
 }
@@ -264,25 +267,6 @@ impl Default for ModelConfigGroup {
 #[serde(rename_all = "snake_case")]
 pub enum ModelConfig {
     Http(HttpModelConfig),
-    Local(LocalModelConfig),
-}
-
-impl ModelConfig {
-    pub fn new_local(
-        model_id: &str,
-        parallelism: u8,
-        num_gpu_layers: u16,
-        enable_fast_attention: Option<bool>,
-    ) -> Self {
-        Self::Local(LocalModelConfig {
-            model_id: model_id.to_owned(),
-            parallelism,
-            num_gpu_layers,
-            enable_fast_attention,
-            context_size: default_context_size(),
-            additional_stop_words: None,
-        })
-    }
 }
 
 #[derive(Serialize, Deserialize, Builder, Debug, Clone)]
@@ -322,38 +306,6 @@ pub struct HttpModelConfig {
 
     #[builder(default)]
     pub additional_stop_words: Option<Vec<String>>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct LocalModelConfig {
-    pub model_id: String,
-
-    #[serde(default = "default_parallelism")]
-    pub parallelism: u8,
-
-    #[serde(default = "default_num_gpu_layers")]
-    pub num_gpu_layers: u16,
-
-    #[serde(default)]
-    pub enable_fast_attention: Option<bool>,
-
-    #[serde(default = "default_context_size")]
-    pub context_size: usize,
-
-    #[serde(default)]
-    pub additional_stop_words: Option<Vec<String>>,
-}
-
-fn default_parallelism() -> u8 {
-    4
-}
-
-fn default_num_gpu_layers() -> u16 {
-    9999
-}
-
-fn default_context_size() -> usize {
-    4096
 }
 
 #[derive(Serialize, Deserialize, Builder, Debug, Clone)]

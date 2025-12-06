@@ -48,8 +48,5 @@ pub trait EmailService: Send + Sync {
     async fn update_setting(&self, input: EmailSettingInput) -> Result<()>;
     async fn delete_setting(&self) -> Result<()>;
 
-    async fn send_test(&self, to: String) -> Result<JoinHandle<()>>;
-    async fn send_password_reset(&self, to: String, code: String) -> Result<JoinHandle<()>>;
-    async fn send_invitation(&self, email: String, code: String) -> Result<JoinHandle<()>>;
     async fn send_signup(&self, email: String) -> Result<JoinHandle<()>>;
 }

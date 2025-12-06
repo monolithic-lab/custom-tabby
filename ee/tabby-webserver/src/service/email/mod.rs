@@ -233,36 +233,11 @@ impl EmailService for EmailServiceImpl {
         Ok(())
     }
 
-    async fn send_invitation(&self, email: String, code: String) -> Result<JoinHandle<()>> {
-        let network_setting = self.setting.read_network_setting().await?;
-        let external_url = network_setting.external_url;
-        let body = templates::invitation(&external_url, &code, &email);
-        self.send_email_in_background(
-            email,
-            "You've been invited to join a Tabby server!".into(),
-            body,
-        )
-        .await
-    }
-
     async fn send_signup(&self, email: String) -> Result<JoinHandle<()>> {
         let external_url = self.setting.read_network_setting().await?.external_url;
 
         let body = templates::signup_success(&external_url, &email);
         self.send_email_in_background(email, "Welcome to Tabby!".into(), body)
-            .await
-    }
-
-    async fn send_password_reset(&self, email: String, code: String) -> Result<JoinHandle<()>> {
-        let external_url = self.setting.read_network_setting().await?.external_url;
-        let body = templates::password_reset(&external_url, &email, &code);
-        self.send_email_in_background(email, "Reset your Tabby account password".into(), body)
-            .await
-    }
-
-    async fn send_test(&self, to: String) -> Result<JoinHandle<()>> {
-        let body = templates::test();
-        self.send_email_in_background(to, "Your mail server is ready to go!".into(), body)
             .await
     }
 }
@@ -310,34 +285,14 @@ mod tests {
             .await;
 
         let handle = service
-            .send_invitation("user@localhost".into(), "12345".into())
+            .send_signup("user@localhost".into())
             .await
             .unwrap();
-
-        handle.await.unwrap();
-
-        let handle = service.send_test("user@localhost".into()).await.unwrap();
 
         handle.await.unwrap();
 
         let mails = mail_server.list_mail().await;
         let default_from = service.read_setting().await.unwrap().unwrap().from_address;
         assert!(mails[0].from.address.contains(&default_from));
-    }
-
-    #[tokio::test]
-    #[serial]
-    async fn test_send_test_email() {
-        let mail_server = TestEmailServer::start().await;
-        let service = mail_server
-            .create_test_email_service(DbConn::new_in_memory().await.unwrap())
-            .await;
-
-        let handle = service.send_test("user@localhost".into()).await.unwrap();
-
-        handle.await.unwrap();
-
-        let mails = mail_server.list_mail().await;
-        assert!(mails[0].subject.contains("ready to go"));
     }
 }

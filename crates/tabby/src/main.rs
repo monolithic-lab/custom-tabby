@@ -9,7 +9,7 @@ mod serve;
 use std::os::unix::fs::PermissionsExt;
 
 use clap::{Parser, Subcommand};
-use tabby_common::config::{Config, ModelConfig};
+use tabby_common::config::Config;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -30,24 +30,6 @@ pub enum Commands {
 
     /// Download the language model for serving.
     Download(download::DownloadArgs),
-}
-
-#[derive(clap::ValueEnum, strum::Display, PartialEq, Clone)]
-pub enum Device {
-    #[strum(serialize = "cpu")]
-    Cpu,
-
-    #[strum(serialize = "cuda")]
-    Cuda,
-
-    #[strum(serialize = "rocm")]
-    Rocm,
-
-    #[strum(serialize = "metal")]
-    Metal,
-
-    #[strum(serialize = "vulkan")]
-    Vulkan,
 }
 
 #[tokio::main]
@@ -88,20 +70,4 @@ macro_rules! fatal {
             std::process::exit(1);
         })
     };
-}
-
-fn to_local_config(model: &str, parallelism: u8, device: &Device) -> ModelConfig {
-    let num_gpu_layers = if *device != Device::Cpu {
-        std::env::var("LLAMA_CPP_N_GPU_LAYERS")
-            .map(|s| s.parse::<u16>().ok())
-            .ok()
-            .flatten()
-            .unwrap_or(9999)
-    } else {
-        0
-    };
-    // This only works when the the model is included in cli arguments.
-    let enable_fast_attention = Some(std::env::var("LLAMA_CPP_FAST_ATTENTION").is_ok());
-
-    ModelConfig::new_local(model, parallelism, num_gpu_layers, enable_fast_attention)
 }

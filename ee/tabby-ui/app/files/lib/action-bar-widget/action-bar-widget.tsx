@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import tabbyLogo from '@/assets/tabby.png'
-import { ChatCommand } from 'tabby-chat-panel/index'
+import { ChatCommand } from '@/lib/integrations/ide'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'

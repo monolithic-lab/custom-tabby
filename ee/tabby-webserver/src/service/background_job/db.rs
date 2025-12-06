@@ -26,10 +26,6 @@ impl DbMaintenanceJob {
             has_error = true;
             logkit::warn!("Failed to delete expired tokens: {}", e);
         };
-        if let Err(e) = db.delete_expired_password_resets().await {
-            has_error = true;
-            logkit::warn!("Failed to delete expired password resets: {}", e);
-        };
         if let Err(e) = db.delete_expired_ephemeral_threads().await {
             has_error = true;
             logkit::warn!("Failed to delete expired ephemeral threads: {}", e);

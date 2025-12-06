@@ -506,12 +506,8 @@ impl UserSecuredExt for tabby_schema::auth::UserSecured {
             auth_token: val.auth_token,
             created_at: val.created_at,
             active: val.active,
-            is_password_set: val.password_encrypted.is_some(),
-
-            // when a user created by registration, password_encrypted is set
-            // when a user created by SSO, password_encrypted is not set
-            // so, we can determine if a user is SSO user by checking if password_encrypted is set
-            is_sso_user: val.password_encrypted.is_none(),
+            is_password_set: false, // Password authentication removed
+            is_sso_user: true, // All users are now SSO users (OAuth/LDAP)
         }
     }
 }

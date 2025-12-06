@@ -1,7 +1,7 @@
 import { Root, RootContent, Text } from 'mdast'
 import { remark } from 'remark'
 import remarkStringify, { Options } from 'remark-stringify'
-import { ChangeItem } from 'tabby-chat-panel/index'
+import { ChangeItem } from '@/lib/integrations/ide'
 
 import { remarkCodeBlocksToPlaceholders } from './markdown/remark-codeblock-to-placeholder'
 import {

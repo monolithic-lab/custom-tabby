@@ -1,6 +1,6 @@
 'use client'
 
-import { LineRange } from 'tabby-chat-panel/index'
+import { LineRange } from '@/lib/integrations/ide'
 
 import { cn } from '@/lib/utils'
 

@@ -1,5 +1,5 @@
 import gitUrlParse from 'git-url-parse'
-import type { GitRepository } from 'tabby-chat-panel'
+import type { GitRepository } from '@/lib/integrations/ide'
 
 export function findClosestGitRepository<T extends GitRepository>(
   repositories: T[],

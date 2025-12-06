@@ -30,7 +30,7 @@ import {
 
 import '../lib/line-menu-extension/line-menu.css'
 
-import { EditorFileContext } from 'tabby-chat-panel/index'
+import { EditorFileContext } from '@/lib/integrations/ide'
 
 import { useLatest } from '@/lib/hooks/use-latest'
 import { filename2prism } from '@/lib/language-utils'

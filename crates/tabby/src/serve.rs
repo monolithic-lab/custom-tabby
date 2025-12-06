@@ -7,10 +7,9 @@ use spinners::{Spinner, Spinners, Stream};
 use tabby_common::{
     api::{self, code::CodeSearch, event::EventLogger},
     axum::AllowedCodeRepository,
-    config::{Config, ModelConfig},
+    config::Config,
     usage,
 };
-use tabby_download::ModelKind;
 #[cfg(feature = "ee")]
 use tabby_webserver::EEApiDoc;
 use tokio::{sync::oneshot::Sender, time::sleep};
@@ -31,10 +30,8 @@ use crate::{
         embedding,
         event::create_event_logger,
         health,
-        model::download_model_if_needed,
         tantivy::IndexReaderProvider,
     },
-    to_local_config, Device,
 };
 
 #[derive(OpenApi)]
@@ -82,32 +79,11 @@ struct ApiDoc;
 
 #[derive(Args)]
 pub struct ServeArgs {
-    /// Model id for `/completions` API endpoint.
-    #[clap(long)]
-    model: Option<String>,
-
-    /// Model id for `/chat/completions` API endpoints.
-    #[clap(long)]
-    chat_model: Option<String>,
-
     #[clap(long, default_value = "0.0.0.0")]
     host: IpAddr,
 
     #[clap(long, default_value_t = 8080)]
     port: u16,
-
-    /// Device to run model inference.
-    #[clap(long, default_value_t=Device::Cpu)]
-    device: Device,
-
-    /// Device to run chat model [default equals --device arg]
-    #[clap(long, requires("chat_model"))]
-    chat_device: Option<Device>,
-
-    /// Parallelism for model serving - increasing this number will have a significant impact on the
-    /// memory requirement e.g., GPU vRAM.
-    #[clap(long, default_value_t = 1)]
-    parallelism: u8,
 
     #[cfg(feature = "ee")]
     #[clap(hide = true, long, default_value_t = false)]
@@ -115,9 +91,7 @@ pub struct ServeArgs {
 }
 
 pub async fn main(config: &Config, args: &ServeArgs) {
-    let config = merge_args(config, args);
-
-    load_model(&config).await;
+    let config = config.clone();
 
     let tx = try_run_spinner();
 
@@ -213,22 +187,8 @@ pub async fn main(config: &Config, args: &ServeArgs) {
         tx.send(())
             .unwrap_or_else(|_| warn!("Spinner channel is closed"));
     }
-    start_heartbeat(args, &config, webserver);
+    start_heartbeat(&config, webserver);
     run_app(api, Some(ui), args.host, args.port).await
-}
-
-async fn load_model(config: &Config) {
-    if let Some(ModelConfig::Local(ref model)) = config.model.completion {
-        download_model_if_needed(&model.model_id, ModelKind::Completion).await;
-    }
-
-    if let Some(ModelConfig::Local(ref model)) = config.model.chat {
-        download_model_if_needed(&model.model_id, ModelKind::Chat).await;
-    }
-
-    if let ModelConfig::Local(ref model) = config.model.embedding {
-        download_model_if_needed(&model.model_id, ModelKind::Embedding).await;
-    }
 }
 
 async fn api_router(
@@ -244,10 +204,6 @@ async fn api_router(
 
     let health_state = Arc::new(health::HealthState::new(
         &config.model,
-        &args.device,
-        args.chat_model
-            .as_deref()
-            .map(|_| args.chat_device.as_ref().unwrap_or(&args.device)),
         webserver,
     ));
 
@@ -333,7 +289,10 @@ async fn api_router(
     }
 
     #[cfg(not(feature = "ee"))]
-    routers.push(server_setting_router);
+    {
+        let _ = args; // suppress unused warning
+        routers.push(server_setting_router);
+    }
 
     let mut root = Router::new();
     for router in routers {
@@ -342,13 +301,9 @@ async fn api_router(
     root
 }
 
-fn start_heartbeat(args: &ServeArgs, config: &Config, webserver: Option<bool>) {
+fn start_heartbeat(config: &Config, webserver: Option<bool>) {
     let state = Arc::new(health::HealthState::new(
         &config.model,
-        &args.device,
-        args.chat_model
-            .as_deref()
-            .map(|_| args.chat_device.as_ref().unwrap_or(&args.device)),
         webserver,
     ));
     tokio::spawn(async move {
@@ -375,29 +330,6 @@ impl Modify for SecurityAddon {
             )
         }
     }
-}
-
-fn merge_args(config: &Config, args: &ServeArgs) -> Config {
-    let mut config = (*config).clone();
-    if let Some(model) = &args.model {
-        if config.model.completion.is_some() {
-            warn!("Overriding completion model from config.toml. The overriding behavior might surprise you. Consider setting the model in config.toml directly.");
-        }
-        config.model.completion = Some(to_local_config(model, args.parallelism, &args.device));
-    };
-
-    if let Some(chat_model) = &args.chat_model {
-        if config.model.chat.is_some() {
-            warn!("Overriding chat model from config.toml. The overriding behavior might surprise you. Consider setting the model in config.toml directly.");
-        }
-        config.model.chat = Some(to_local_config(
-            chat_model,
-            args.parallelism,
-            args.chat_device.as_ref().unwrap_or(&args.device),
-        ));
-    }
-
-    config
 }
 
 fn try_run_spinner() -> Option<Sender<()>> {

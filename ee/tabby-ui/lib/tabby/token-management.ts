@@ -1,6 +1,6 @@
 import { jwtDecode } from 'jwt-decode'
 import { isNil } from 'lodash-es'
-import { InitRequest } from 'tabby-chat-panel'
+import { InitRequest } from '@/lib/integrations/ide'
 
 import { isClientSide } from '../utils'
 import { AuthData } from './auth'

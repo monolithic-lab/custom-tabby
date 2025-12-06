@@ -16,7 +16,7 @@ import type {
   LookupSymbolHint,
   SymbolInfo,
   TerminalContext
-} from 'tabby-chat-panel'
+} from '@/lib/integrations/ide'
 
 import type { QuestionAnswerPair, SessionState } from '@/lib/types'
 

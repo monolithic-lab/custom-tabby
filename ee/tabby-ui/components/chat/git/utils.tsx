@@ -1,4 +1,4 @@
-import { ChangeItem } from 'tabby-chat-panel/index'
+import { ChangeItem } from '@/lib/integrations/ide'
 
 import { nanoid } from '@/lib/utils'
 

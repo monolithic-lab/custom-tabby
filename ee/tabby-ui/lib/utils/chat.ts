@@ -9,7 +9,7 @@ import type {
   FileRange,
   GetChangesParams,
   TerminalContext
-} from 'tabby-chat-panel'
+} from '@/lib/integrations/ide'
 
 import {
   ContextInfo,

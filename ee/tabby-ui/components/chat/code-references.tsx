@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useState } from 'react'
 import { isNil } from 'lodash-es'
-import { TerminalContext } from 'tabby-chat-panel/index'
+import { TerminalContext } from '@/lib/integrations/ide'
 
 import { RelevantCodeContext, ServerFileContext } from '@/lib/types'
 import {

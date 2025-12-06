@@ -5,12 +5,13 @@ use tabby_db::{
     AttachmentClientCode, AttachmentCode, AttachmentCodeFileList, AttachmentCommitDoc,
     AttachmentDoc, AttachmentIngestedDoc, AttachmentIssueDoc, AttachmentPageDoc, AttachmentPullDoc,
     AttachmentWebDoc, EmailSettingDAO, IngestedDocumentDAO, IngestedDocumentStatusDAO,
-    IngestionStatusDAO, IntegrationDAO, InvitationDAO, JobRunDAO, LdapCredentialDAO,
+    IngestionStatusDAO, IntegrationDAO, JobRunDAO, LdapCredentialDAO,
     NotificationDAO, OAuthCredentialDAO, PageDAO, ServerSettingDAO, ThreadDAO, UserEventDAO,
 };
 
 use crate::{
     auth::LdapEncryptionKind,
+    email::EmailSetting,
     ingestion::IngestionStats,
     integration::{Integration, IntegrationKind, IntegrationStatus},
     interface::UserValue,
@@ -19,8 +20,8 @@ use crate::{
     repository::RepositoryKind,
     retrieval,
     schema::{
-        auth::{self, LdapCredential, OAuthCredential, OAuthProvider},
-        email::{AuthMethod, EmailSetting, Encryption},
+        auth::{LdapCredential, OAuthCredential, OAuthProvider},
+        email::{AuthMethod, Encryption},
         ingestion::{IngestedDocStatus, IngestedDocument},
         job,
         repository::{
@@ -33,17 +34,6 @@ use crate::{
     setting::BrandingSetting,
     thread::{self},
 };
-
-impl From<InvitationDAO> for auth::Invitation {
-    fn from(val: InvitationDAO) -> Self {
-        Self {
-            id: (val.id as i32).as_id(),
-            email: val.email,
-            code: val.code,
-            created_at: val.created_at,
-        }
-    }
-}
 
 impl From<JobRunDAO> for job::JobRun {
     fn from(run: JobRunDAO) -> Self {

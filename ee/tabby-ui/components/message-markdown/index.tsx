@@ -44,7 +44,7 @@ import {
   ListSymbolItem,
   LookupSymbolHint,
   SymbolInfo
-} from 'tabby-chat-panel/index'
+} from '@/lib/integrations/ide'
 
 import {
   CUSTOM_HTML_BLOCK_TAGS,
